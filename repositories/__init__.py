@@ -1,0 +1,46 @@
+﻿from repositories.base import RepositoryStore, EntityRepository
+from repositories.json_store import (
+    JsonRepositoryStore,
+    JsonEntityRepository,
+    ProjectRepository,
+    ProcessRepository,
+    UserRepository,
+    RoleRepository,
+    DepartmentRepository,
+    CargoRepository,
+    SectorRepository,
+)
+from repositories.supabase_store import (
+    SupabaseRepositoryStore,
+    SupabaseEntityRepository,
+    SupabaseProjectRepository,
+    SupabaseProcessRepository,
+    SupabaseUserRepository,
+    SupabaseRoleRepository,
+    SupabaseDepartmentRepository,
+    SupabaseCargoRepository,
+    SupabaseSectorRepository,
+)
+
+__all__ = [
+    "RepositoryStore",
+    "EntityRepository",
+    "JsonRepositoryStore",
+    "JsonEntityRepository",
+    "ProjectRepository",
+    "ProcessRepository",
+    "UserRepository",
+    "RoleRepository",
+    "DepartmentRepository",
+    "CargoRepository",
+    "SectorRepository",
+    "SupabaseRepositoryStore",
+    "SupabaseEntityRepository",
+    "SupabaseProjectRepository",
+    "SupabaseProcessRepository",
+    "SupabaseUserRepository",
+    "SupabaseRoleRepository",
+    "SupabaseDepartmentRepository",
+    "SupabaseCargoRepository",
+    "SupabaseSectorRepository",
+]

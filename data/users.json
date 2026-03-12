@@ -1,0 +1,53 @@
+[
+  {
+    "id": "af503128-f108-42a8-ad32-ce8415ed9f4e",
+    "nome": "Administrador",
+    "email": "admin@hpo.local",
+    "username": "admin",
+    "role_id": "b9a0afe1-77b0-45e1-a209-95759b291b29",
+    "password_hash": "205c249adeaf3a17911cb0f6fd6ede8256a6175e8e325d377cbf0930bcf28aee",
+    "must_change_password": false,
+    "active": true,
+    "created_at": "2026-02-25T20:12:55.332475",
+    "updated_at": "2026-03-02T12:05:00",
+    "has_login": true,
+    "departamento_id": "",
+    "cargo_id": "",
+    "password_is_temporary": false,
+    "temp_password_expires_at": ""
+  },
+  {
+    "id": "c00e0b48-6f25-4003-9da0-c58288803246",
+    "nome": "Daniel Zamboni",
+    "email": "dzamboni@sanchezadv.com.br",
+    "username": "dzamboni",
+    "role_id": "b9a0afe1-77b0-45e1-a209-95759b291b29",
+    "departamento_id": "f8b411d5-6188-4500-b565-dad90d4b8700",
+    "cargo_id": "car-005-4f09-8c6e-a1d3f31b0b55",
+    "has_login": true,
+    "password_hash": "65832baf1e4bedaa78a15d4c607b210e9add5fba264324b3cf3502be41dbfbd1",
+    "must_change_password": false,
+    "password_is_temporary": false,
+    "temp_password_expires_at": "",
+    "active": true,
+    "created_at": "2026-03-10T12:15:45.241496",
+    "updated_at": "2026-03-10T14:25:24.498245"
+  },
+  {
+    "id": "432a90b9-da50-451c-97f0-27074e0ccaf3",
+    "nome": "Mariana R",
+    "email": "mariana@sanchezadv.com.br",
+    "username": "mariana",
+    "role_id": "22222222-2222-4222-8222-222222222222",
+    "departamento_id": "1a9acae2-04b3-4750-8d5e-b7b69a15f9ac",
+    "cargo_id": "car-002-4f09-8c6e-a1d3f31b0b22",
+    "has_login": true,
+    "password_hash": "65832baf1e4bedaa78a15d4c607b210e9add5fba264324b3cf3502be41dbfbd1",
+    "must_change_password": false,
+    "password_is_temporary": false,
+    "temp_password_expires_at": "",
+    "active": true,
+    "created_at": "2026-03-10T14:46:30.258336",
+    "updated_at": "2026-03-10T14:47:12.211409"
+  }
+]

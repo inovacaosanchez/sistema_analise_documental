@@ -1,0 +1,41 @@
+[
+  {
+    "id": "b9a0afe1-77b0-45e1-a209-95759b291b29",
+    "nome": "Administrador",
+    "permissions": [
+      "*"
+    ]
+  },
+  {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "nome": "Gestor de Processos",
+    "permissions": [
+      "view-processos-analise",
+      "view-processos-priorizacao",
+      "view-processos-cadastro",
+      "view-processos-consulta",
+      "view-cadastros-script-perguntas",
+      "view-cadastros-cargos",
+      "view-cadastros-usuarios"
+    ]
+  },
+  {
+    "id": "22222222-2222-4222-8222-222222222222",
+    "nome": "PMO Projetos",
+    "permissions": [
+      "view-processos-consulta",
+      "view-projetos-cadastrar",
+      "view-projetos-consultar",
+      "view-projetos-dashboard"
+    ]
+  },
+  {
+    "id": "33333333-3333-4333-8333-333333333333",
+    "nome": "Consulta Executiva",
+    "permissions": [
+      "view-processos-consulta",
+      "view-projetos-consultar",
+      "view-projetos-dashboard"
+    ]
+  }
+]

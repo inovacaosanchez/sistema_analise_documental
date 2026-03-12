@@ -1,0 +1,22 @@
+[
+  {
+    "id": "dpt-001-4f09-8c6e-a1d3f31b0a11",
+    "nome": "Operações"
+  },
+  {
+    "id": "dpt-002-4f09-8c6e-a1d3f31b0a22",
+    "nome": "Financeiro"
+  },
+  {
+    "id": "dpt-003-4f09-8c6e-a1d3f31b0a33",
+    "nome": "Recursos Humanos"
+  },
+  {
+    "id": "dpt-004-4f09-8c6e-a1d3f31b0a44",
+    "nome": "Tecnologia"
+  },
+  {
+    "id": "dpt-005-4f09-8c6e-a1d3f31b0a55",
+    "nome": "Compras"
+  }
+]

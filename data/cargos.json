@@ -1,0 +1,26 @@
+[
+  {
+    "id": "car-001-4f09-8c6e-a1d3f31b0b11",
+    "nome": "Analista de Processos"
+  },
+  {
+    "id": "car-002-4f09-8c6e-a1d3f31b0b22",
+    "nome": "Coordenador de Operações"
+  },
+  {
+    "id": "car-003-4f09-8c6e-a1d3f31b0b33",
+    "nome": "Especialista Financeiro"
+  },
+  {
+    "id": "car-004-4f09-8c6e-a1d3f31b0b44",
+    "nome": "Product Owner"
+  },
+  {
+    "id": "car-005-4f09-8c6e-a1d3f31b0b55",
+    "nome": "Gerente de Projetos"
+  },
+  {
+    "id": "car-006-4f09-8c6e-a1d3f31b0b66",
+    "nome": "Assistente Administrativo"
+  }
+]

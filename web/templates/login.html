@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>HPO - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main style="min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg, hsl(237 100% 15%), hsl(237 100% 20%), hsl(146 98% 40%));">
+    <section class="card" style="width:min(480px,95vw);overflow:hidden;padding:0;">
+      <header class="hero" style="position:static;border-radius:0;padding:18px;">
+        <h2 style="margin:0;">HPO</h2>
+        <p style="margin:4px 0 0;">Hub de Processos Operacionais</p>
+        <p style="margin:8px 0 0;font-size:.88rem;opacity:.9;">por Sanchez Lab</p>
+      </header>
+      <div style="padding:18px;">
+        <h3 style="margin-bottom:8px;">Entrar</h3>
+        <p style="margin-bottom:14px;color:var(--muted);">Informe suas credenciais para acessar o sistema.</p>
+        <label>Usuário ou e-mail
+          <input id="login-username" type="text" autocomplete="username">
+        </label>
+        <label style="margin-top:8px;">Senha
+          <input id="login-password" type="password" autocomplete="current-password">
+        </label>
+        <div class="row end" style="margin-top:14px;">
+          <button id="btn-login" class="btn">Logar</button>
+        </div>
+        <p id="login-msg" class="error-text"></p>
+      </div>
+    </section>
+  </main>
+  <script>
+    async function doLogin() {
+      const msg = document.getElementById("login-msg");
+      msg.textContent = "";
+      try {
+        const resp = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": (document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "")
+          },
+          body: JSON.stringify({
+            username: document.getElementById("login-username").value.trim(),
+            password: document.getElementById("login-password").value
+          })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message || "Falha no login");
+        window.location.href = "/";
+      } catch (e) {
+        msg.textContent = e.message || "Erro no login";
+      }
+    }
+    document.getElementById("btn-login").addEventListener("click", doLogin);
+    document.getElementById("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+  </script>
+</body>
+</html>

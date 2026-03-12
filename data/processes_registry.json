@@ -1,0 +1,47 @@
+[
+  {
+    "nome": "Teste - alterado 2",
+    "departamento_id": "set-002-4f09-8c6e-a1d3f31b0d22",
+    "departamento_nome": "Financeiro",
+    "descricao": "Processo de Exemplo",
+    "status": "ativo",
+    "versao": "1.0",
+    "responsavel_id": "c00e0b48-6f25-4003-9da0-c58288803246",
+    "responsavel_nome": "Daniel Zamboni",
+    "etapas": [
+      {
+        "id": "f448812e-9e61-4bbb-a762-5aa802bdbaa7",
+        "processo_id": "bdb8ad34-b6f8-46b0-a962-787056ad7d8f",
+        "nome": "Etapa 2 Exemplo",
+        "ordem": 1,
+        "departamento_id": "set-003-4f09-8c6e-a1d3f31b0d33",
+        "departamento_nome": "Recursos Humanos",
+        "cargo_id": "car-002-4f09-8c6e-a1d3f31b0b22",
+        "cargo_nome": "Coordenador de Operações",
+        "responsavel_id": "432a90b9-da50-451c-97f0-27074e0ccaf3",
+        "responsavel_nome": "Mariana R",
+        "descricao": "Envio de folha de pagamentoqwe qweqw ewq",
+        "sla": "",
+        "tipo_entrada": "automatica",
+        "status": "ativa",
+        "conhecimento": {
+          "instrucoes": "eqweqweqwe",
+          "observacoes": "qweqwewq",
+          "pontos_atencao": "wqe",
+          "checklist": [
+            {
+              "id": "9cc9905b-82df-4c5e-a417-0f7cac6b7483",
+              "texto": "qweqwe",
+              "concluido": false
+            }
+          ],
+          "anexos": [],
+          "comentarios": []
+        }
+      }
+    ],
+    "id": "bdb8ad34-b6f8-46b0-a962-787056ad7d8f",
+    "data_criacao": "2026-03-11T11:09:54.151010",
+    "ultima_atualizacao": "2026-03-11T20:26:59.085195"
+  }
+]

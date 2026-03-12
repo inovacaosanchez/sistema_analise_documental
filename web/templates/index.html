@@ -1,0 +1,1008 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>Sistema de Análise Documental</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-top">
+        <button id="btn-sidebar-toggle" class="icon-btn" title="Minimizar menu">☰</button>
+        <div>
+          <h1 class="brand">HPO</h1>
+          <p class="brand-subtitle">Hub de Processos Operacionais</p>
+        </div>
+      </div>
+
+      <div class="menu-group collapsed-group" data-group="processos">
+        <div class="menu-group-header">
+          <h4 class="menu-group-title">Processos</h4>
+          <button class="menu-group-toggle" data-group="processos" aria-label="Expandir processos" aria-expanded="false">▸</button>
+        </div>
+        <div class="menu-group-items" data-group-items="processos">
+          <button class="menu-item" data-view="view-processos-dashboard">
+            <span class="menu-text">Dashboard de Processos</span>
+            <span class="menu-icon">📈</span>
+          </button>
+          <button class="menu-item" data-view="view-processos-cadastro">
+            <span class="menu-text">Cadastro de Processos</span>
+            <span class="menu-icon">🧭</span>
+          </button>
+          <button class="menu-item" data-view="view-processos-consulta">
+            <span class="menu-text">Consultar Processos</span>
+            <span class="menu-icon">🗂️</span>
+          </button>
+          <button class="menu-item active" data-view="view-processos-analise">
+            <span class="menu-text">Análise de Processos</span>
+            <span class="menu-icon">📄</span>
+          </button>
+          <button class="menu-item" data-view="view-processos-priorizacao">
+            <span class="menu-text">Robozômetro</span>
+            <span class="menu-icon">📊</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-group collapsed-group" data-group="projetos">
+        <div class="menu-group-header">
+          <h4 class="menu-group-title">Projetos</h4>
+          <button class="menu-group-toggle" data-group="projetos" aria-label="Expandir projetos" aria-expanded="false">▸</button>
+        </div>
+        <div class="menu-group-items" data-group-items="projetos">
+          <button class="menu-item" data-view="view-projetos-dashboard">
+            <span class="menu-text">Dashboard de Projetos</span>
+            <span class="menu-icon">📈</span>
+          </button>
+          <button class="menu-item" data-view="view-projetos-cadastrar">
+            <span class="menu-text">Cadastrar Projetos</span>
+            <span class="menu-icon">🧩</span>
+          </button>
+          <button class="menu-item" data-view="view-projetos-consultar">
+            <span class="menu-text">Consultar Projetos</span>
+            <span class="menu-icon">📋</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-group collapsed-group" data-group="cadastros">
+        <div class="menu-group-header">
+          <h4 class="menu-group-title">Cadastros</h4>
+          <button class="menu-group-toggle" data-group="cadastros" aria-label="Expandir cadastros" aria-expanded="false">▸</button>
+        </div>
+        <div class="menu-group-items" data-group-items="cadastros">
+          <button class="menu-item" data-view="view-cadastros-script-perguntas">
+            <span class="menu-text">Script de Perguntas</span>
+            <span class="menu-icon">📝</span>
+          </button>
+          <button class="menu-item" data-view="view-cadastros-cargos">
+            <span class="menu-text">Cadastro de Cargos</span>
+            <span class="menu-icon">🪪</span>
+          </button>
+          <button class="menu-item" data-view="view-projetos-setores">
+            <span class="menu-text">Cadastro de Setores</span>
+            <span class="menu-icon">🏢</span>
+          </button>
+          <button class="menu-item" data-view="view-cadastros-usuarios">
+            <span class="menu-text">Cadastro de Usuários</span>
+            <span class="menu-icon">👤</span>
+          </button>
+          <button class="menu-item" data-view="view-cadastros-perfis">
+            <span class="menu-text">Papéis e Acessos</span>
+            <span class="menu-icon">🛡️</span>
+          </button>
+        </div>
+      </div>
+      <div class="menu-footer">
+        <button id="btn-logout" class="menu-item logout-btn">
+          <span class="menu-text">Sair</span>
+          <span class="menu-icon">🚪</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section id="view-processos-analise" class="module-view">
+        <header class="hero">
+          <div class="row between center">
+            <div>
+              <h2>Sistema de Análise de Processos</h2>
+              <p>Leitura, chunking semântico, geração e aprovação de documentos.</p>
+            </div>
+            <button id="btn-process-help" class="icon-btn help-btn" title="Abrir script de perguntas" aria-label="Script de perguntas">
+              <svg class="help-icon-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+                <path d="M9.7 9.5a2.5 2.5 0 1 1 4.2 1.8c-.9.7-1.4 1.2-1.4 2.2v.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                <circle cx="12" cy="17.2" r="1" fill="currentColor"></circle>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Configuração de Caminhos</h3>
+          <div class="grid two">
+            <label>Pasta de Origem<input id="origem_path" type="text" placeholder="C:\\Processos\\Origem"></label>
+            <label>Pasta de Destino<input id="destino_path" type="text" placeholder="C:\\Processos\\Saída"></label>
+          </div>
+          <div class="row gap">
+            <button id="btn-save-config" class="btn">Salvar Configuração</button>
+            <button id="btn-scan" class="btn accent">Escanear Documentos</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="process-layout">
+            <div class="process-main">
+              <h3>Controle de Processamento</h3>
+              <div class="row gap">
+                <button id="btn-start" class="btn success">Processar Todos</button>
+                <button id="btn-stop" class="btn danger">Parar</button>
+              </div>
+              <div class="progress-wrap">
+                <div class="progress-meta">
+                  <span id="progress-label">0/0 documentos selecionados processados</span>
+                  <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress"><div id="progress-bar"></div></div>
+              </div>
+            </div>
+            <div class="kpi-grid">
+              <article class="kpi-card"><h4>Processados</h4><strong id="kpi-processed">0</strong></article>
+              <article class="kpi-card"><h4>Aguardando Aprovação</h4><strong id="kpi-waiting">0</strong></article>
+              <article class="kpi-card"><h4>Pendentes</h4><strong id="kpi-pending">0</strong></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Documentos Encontrados</h3>
+          <div class="row gap" style="margin-bottom:10px;">
+            <button id="btn-select-all" class="btn ghost">Selecionar Todos</button>
+            <button id="btn-select-none" class="btn ghost">Desmarcar Todos</button>
+            <button id="btn-select-invert" class="btn ghost">Inverter Seleção</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Selecionar</th><th>Departamento</th><th>Subárea</th><th>Processo</th><th>Status</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="documents-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Logs</h3>
+          <div class="row gap" style="margin-bottom:10px;">
+            <button id="btn-log-main" class="btn ghost active-log">Log Principal</button>
+            <button id="btn-log-detail" class="btn ghost">Log Detalhado</button>
+          </div>
+          <pre id="log-summary"></pre>
+          <pre id="log-detailed" class="hidden"></pre>
+        </section>
+      </section>
+
+      <section id="view-processos-priorizacao" class="module-view hidden">
+        <header class="hero">
+          <div class="row between center">
+            <div>
+              <h2>Robozômetro</h2>
+              <p>Avalie viabilidade de automação com score ponderado e classificação de prioridade.</p>
+            </div>
+            <button id="btn-prio-help" class="icon-btn help-btn" title="Metodologia do cálculo" aria-label="Ajuda">
+              <svg class="help-icon-svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"></circle>
+                <path d="M9.7 9.5a2.5 2.5 0 1 1 4.2 1.8c-.9.7-1.4 1.2-1.4 2.2v.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                <circle cx="12" cy="17.2" r="1" fill="currentColor"></circle>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Identificação do Estudo</h3>
+          <div class="grid two">
+            <label>Responsável<input id="prio-responsavel" type="text" placeholder="Nome do responsável"></label>
+            <label>Cargo<input id="prio-cargo" type="text" placeholder="Cargo/função"></label>
+          </div>
+          <label style="margin-top:10px;">Resumo do processo
+            <textarea id="prio-resumo-processo" rows="4" placeholder="Descreva brevemente o processo avaliado"></textarea>
+          </label>
+        </section>
+
+        <section class="card">
+          <h3>Parâmetros de Entrada</h3>
+          <div class="grid two">
+            <label>Qtd Pessoas<input id="prio-qtd-pessoas" type="number" min="0" step="1"></label>
+            <label>Horas Mensais<input id="prio-horas-mensais" type="number" min="0" step="0.01"></label>
+            <label>Custo Mensal (R$)<input id="prio-custo-mensal" type="text" inputmode="decimal" placeholder="R$ 0,00"></label>
+            <label>Custo Desenvolvimento (R$)<input id="prio-custo-desenvolvimento" type="text" inputmode="decimal" placeholder="R$ 0,00"></label>
+            <label>Complexidade (1–5)
+              <input id="prio-complexidade" type="number" min="1" max="5" step="1">
+              <small class="resume-text">Maior = mais complexo.</small>
+            </label>
+            <label>Desenvolvimento Interno (1–5)
+              <input id="prio-dev-interno" type="number" min="1" max="5" step="1">
+              <small class="resume-text">Maior = maior aderência para desenvolvimento interno.</small>
+            </label>
+          </div>
+          <div class="row gap">
+            <button id="btn-prio-calculate" class="btn success">Calcular Priorização</button>
+            <span id="prio-error" class="error-text"></span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Resultado</h3>
+          <div class="kpi-grid three">
+            <article class="kpi-card"><h4>Score Final</h4><strong id="prio-score-final">-</strong></article>
+            <article class="kpi-card"><h4>Prioridade</h4><strong id="prio-prioridade">-</strong></article>
+            <article class="kpi-card"><h4>Payback (meses)</h4><strong id="prio-payback">-</strong></article>
+          </div>
+          <div class="table-wrap" style="margin-top:10px;">
+            <table>
+              <tbody>
+                <tr><th>Custo Hora</th><td id="prio-custo-hora">-</td></tr>
+                <tr><th>CP Anual</th><td id="prio-cp-anual">-</td></tr>
+                <tr><th>Economia Mensal</th><td id="prio-economia-mensal">-</td></tr>
+                <tr><th>CP Score</th><td id="prio-cp-score">-</td></tr>
+                <tr><th>Payback Score</th><td id="prio-pb-score">-</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="resume-text" style="margin-top:10px;">Fórmula resumida: score final = 0,35×CP Score + 0,30×Payback Score + 0,20×(6 - Complexidade) + 0,15×Desenvolvimento Interno.</p>
+        </section>
+
+        <section class="card">
+          <h3>Preview da Documentação</h3>
+          <article id="prio-preview" class="preview-doc"><p>Calcule os dados para visualizar o documento de apoio.</p></article>
+          <div class="row gap end" style="margin-top:12px;">
+            <button id="btn-prio-word" class="btn ghost btn-sm">Baixar Word</button>
+            <button id="btn-prio-pdf" class="btn ghost btn-sm">Baixar PDF</button>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-processos-cadastro" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Cadastro e Gestão de Processos</h2>
+            <p>Gestão estruturada por setor, etapas, responsáveis e histórico rastreável.</p>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Pesquisa de Processo</h3>
+          <div class="grid two">
+            <label>Buscar processo para edição
+              <input id="proc-edit-search" type="text" placeholder="Digite o nome do processo">
+            </label>
+            <label>Resultados
+              <select id="proc-edit-select">
+                <option value="">Selecione um processo...</option>
+              </select>
+            </label>
+          </div>
+          <div class="row gap end" style="margin-top:10px;">
+            <button id="btn-proc-search-edit" class="btn ghost">Pesquisar</button>
+            <button id="btn-proc-load-edit" class="btn ghost">Carregar para edição</button>
+          </div>
+          <p id="proc-edit-msg" class="error-text"></p>
+        </section>
+
+        <section class="card">
+          <h3>Cadastro de Processo</h3>
+          <div class="grid two">
+            <label>Nome do processo<input id="proc-nome" type="text"></label>
+            <label>Setor responsável<select id="proc-departamento"></select></label>
+            <label>Status
+              <select id="proc-status">
+                <option value="rascunho">Rascunho</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </label>
+            <label>Versão<input id="proc-versao" type="text" value="1.0"></label>
+            <label>Responsável pelo processo<select id="proc-responsavel"></select></label>
+          </div>
+          <label style="margin-top:10px;">Descrição<textarea id="proc-descricao" rows="3"></textarea></label>
+        </section>
+
+        <section class="card">
+          <div class="row between center">
+            <h3>Etapas do Processo</h3>
+            <button id="btn-proc-add-etapa" class="btn ghost">Adicionar etapa</button>
+          </div>
+          <div id="proc-etapas-container" class="stages"></div>
+        </section>
+
+        <section class="card">
+          <div class="row gap end">
+            <button id="btn-proc-save" class="btn success">Salvar processo</button>
+            <button id="btn-proc-clear" class="btn ghost">Limpar</button>
+          </div>
+          <p id="proc-editing-hint" class="resume-text" style="margin-top:8px;"></p>
+          <p id="proc-msg" class="error-text"></p>
+        </section>
+      </section>
+
+      <section id="view-processos-consulta" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Consulta de Processos</h2>
+            <p>Filtros avançados, agrupamento por setor e expansão de processos/etapas.</p>
+          </div>
+        </header>
+
+        <section class="card proc-consulta-filtros-card">
+          <h3>Filtros de Consulta</h3>
+          <div class="grid two">
+            <label>Buscar por nome do processo<input id="proc-flt-nome" type="text"></label>
+            <label>Setor<select id="proc-flt-departamento"></select></label>
+            <label>Status
+              <select id="proc-flt-status">
+                <option value="">Todos</option>
+                <option value="rascunho">Rascunho</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </label>
+          </div>
+          <div class="row gap">
+            <button id="btn-proc-filtrar" class="btn">Aplicar filtros</button>
+            <button id="btn-proc-limpar-filtro" class="btn ghost">Limpar</button>
+            <button id="btn-proc-expand-all" class="btn ghost">Expandir tudo</button>
+            <button id="btn-proc-collapse-all" class="btn ghost">Minimizar tudo</button>
+          </div>
+          <div class="row gap" style="margin-top:10px;">
+            <button id="btn-proc-view-list" class="btn ghost active-log">Lista por Departamento</button>
+            <button id="btn-proc-view-flow" class="btn ghost">Esteira por Departamento</button>
+          </div>
+        </section>
+
+        <section id="proc-view-list-card" class="card">
+            <h3>Processos por Setor</h3>
+          <div id="proc-groups-wrap" class="proc-groups-wrap"></div>
+        </section>
+
+        <section id="proc-view-flow-card" class="card hidden">
+          <h3>Esteira Visual de Etapas</h3>
+          <p>Visualização do fluxo por processo com clique para detalhes da etapa.</p>
+          <div id="proc-flow-wrap" class="proc-flow-wrap"></div>
+        </section>
+      </section>
+
+      <section id="view-processos-dashboard" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Dashboard de Processos</h2>
+            <p>Indicadores consolidados de processos, etapas, setores e responsáveis.</p>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Filtros</h3>
+          <div class="grid four proc-dash-filters-row">
+            <label>Setor<select id="proc-dash-filter-dept"><option value="">Todos</option></select></label>
+            <label>Responsável<select id="proc-dash-filter-resp"><option value="">Todos</option></select></label>
+            <label>Status do processo
+              <select id="proc-dash-filter-status">
+                <option value="">Todos</option>
+                <option value="ativo">Ativo</option>
+                <option value="rascunho">Rascunho</option>
+                <option value="inativo">Inativo</option>
+              </select>
+            </label>
+            <div class="row gap proc-dash-filter-actions">
+              <button id="btn-proc-dash-apply" class="btn">Aplicar filtros</button>
+              <button id="btn-proc-dash-clear" class="btn ghost">Limpar filtros</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="kpi-grid four compact-kpis" id="proc-dashboard-kpis"></div>
+        </section>
+
+        <section class="card">
+          <h3>Visões Analíticas</h3>
+          <div class="charts-grid">
+            <article class="chart-card">
+              <h4>Processos por Setor</h4>
+              <div class="chart-wrap"><canvas id="chart-proc-dept"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Etapas por Setor</h4>
+              <div class="chart-wrap"><canvas id="chart-proc-steps-dept"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Processos por Responsável</h4>
+              <div class="chart-wrap"><canvas id="chart-proc-resp"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Status dos Processos</h4>
+              <div class="chart-wrap"><canvas id="chart-proc-status"></canvas></div>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-projetos-cadastrar" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Cadastrar Projetos</h2>
+            <p>Cadastro completo com etapas, anexos e anotações.</p>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Dados do Projeto</h3>
+          <div class="grid two">
+            <label>Nome do projeto<input id="proj-nome" type="text"></label>
+            <label>Responsável<select id="proj-responsavel"></select></label>
+            <label>Focal<select id="proj-focal"></select></label>
+            <label>Status
+              <select id="proj-status">
+                <option value="backlog">Backlog</option>
+                <option value="proxima_sprint">Próxima Sprint</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="pausado">Pausado</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </label>
+            <label>Criticidade
+              <select id="proj-criticidade">
+                <option value="urgente">Urgente</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </label>
+            <label>Setor do projeto
+              <select id="proj-setor"></select>
+            </label>
+            <label>Participantes<select id="proj-participantes" multiple></select></label>
+            <label>Data início previsto<input id="proj-data-inicio-previsto" type="date"></label>
+            <label>Data início real<input id="proj-data-inicio-real" type="date"></label>
+            <label>Previsão término<input id="proj-previsao-termino" type="date"></label>
+            <label>Término real<input id="proj-termino-real" type="date"></label>
+            <label>Orçamento (R$)<input id="proj-orcamento" type="number" min="0" step="0.01"></label>
+            <label>Custo atual (R$)<input id="proj-custo-atual" type="number" min="0" step="0.01"></label>
+          </div>
+          <label style="margin-top:10px;">Descrição<textarea id="proj-descricao" rows="4"></textarea></label>
+          <label style="margin-top:10px;">Anotações gerais<textarea id="proj-anotacoes-gerais" rows="3"></textarea></label>
+          <label style="margin-top:10px;">Anexos do projeto<input id="proj-anexos" type="file" multiple></label>
+        </section>
+
+        <section class="card">
+          <div class="row between center">
+            <h3>Etapas do Projeto</h3>
+            <button id="btn-add-etapa" class="btn ghost">Adicionar etapa</button>
+          </div>
+          <div id="etapas-container" class="stages"></div>
+        </section>
+
+        <section class="card">
+          <div class="row end"><button id="btn-cadastrar-projeto" class="btn success">Cadastrar projeto</button></div>
+          <p id="proj-form-msg" class="error-text"></p>
+        </section>
+      </section>
+
+      <section id="view-projetos-consultar" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Consultar Projetos</h2>
+            <p>Filtros por nome, status, responsável e período. Visualização em lista ou cards.</p>
+          </div>
+        </header>
+
+        <section class="card">
+          <div class="grid two">
+            <label>Nome do projeto<input id="flt-nome" type="text"></label>
+            <label>Responsável<input id="flt-responsavel" type="text"></label>
+            <label>Status
+              <select id="flt-status">
+                <option value="">Todos</option>
+                <option value="backlog">Backlog</option>
+                <option value="proxima_sprint">Próxima Sprint</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="pausado">Pausado</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </label>
+            <label>Data início<input id="flt-data-inicio" type="date"></label>
+            <label>Data término<input id="flt-data-fim" type="date"></label>
+          </div>
+          <div class="row gap">
+            <button id="btn-filtrar-projetos" class="btn">Aplicar filtros</button>
+            <button id="btn-limpar-filtros" class="btn ghost">Limpar</button>
+            <button id="btn-view-lista" class="btn ghost active-log">Lista</button>
+            <button id="btn-view-cards" class="btn ghost">Cards</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="kpi-grid three">
+            <article class="kpi-card"><h4>Projetos Encontrados</h4><strong id="consulta-kpi-total">0</strong></article>
+            <article class="kpi-card"><h4>Em Andamento</h4><strong id="consulta-kpi-ativos">0</strong></article>
+            <article class="kpi-card"><h4>Atrasados</h4><strong id="consulta-kpi-atrasados">0</strong></article>
+          </div>
+        </section>
+
+        <section class="card" id="consulta-lista-wrap">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Projeto</th><th>Responsável</th><th>Focal</th><th>Status</th><th>Criticidade</th><th>Setor</th><th>Progresso</th><th>Resumo</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="projects-list-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card hidden" id="consulta-cards-wrap">
+          <div id="projects-cards" class="cards-grid"></div>
+        </section>
+      </section>
+
+      <section id="view-projetos-dashboard" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Dashboard de Projetos</h2>
+            <p>KPIs, filtros e linha do tempo (Gantt) para acompanhamento.</p>
+          </div>
+        </header>
+
+        <section class="card">
+          <h3>Filtros</h3>
+          <div class="grid two">
+            <label>Status
+              <select id="dash-filter-status">
+                <option value="">Todos</option>
+                <option value="backlog">Backlog</option>
+                <option value="proxima_sprint">Próxima Sprint</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="pausado">Pausado</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </label>
+            <label>Criticidade
+              <select id="dash-filter-criticidade">
+                <option value="">Todas</option>
+                <option value="urgente">Urgente</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+                <option value="critica">Crítica</option>
+              </select>
+            </label>
+            <label>Setor<select id="dash-filter-setor"><option value="">Todos</option></select></label>
+            <label>Responsável<select id="dash-filter-responsavel"><option value="">Todos</option></select></label>
+            <label>Responsável da etapa<select id="dash-filter-etapa-responsavel"></select></label>
+          </div>
+          <div class="row gap">
+            <button id="btn-dash-apply-filters" class="btn">Aplicar filtros</button>
+            <button id="btn-dash-clear-filters" class="btn ghost">Limpar filtros</button>
+          </div>
+        </section>
+
+        <section class="card"><div class="kpi-grid four compact-kpis" id="dashboard-kpis"></div></section>
+
+        <section class="card">
+          <h3>Visões Analíticas</h3>
+          <div class="charts-grid">
+            <article class="chart-card">
+              <h4>Projetos por Status</h4>
+              <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Projetos por Criticidade</h4>
+              <div class="chart-wrap"><canvas id="chart-criticidade"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Projetos por Setor</h4>
+              <div class="chart-wrap"><canvas id="chart-setor"></canvas></div>
+            </article>
+            <article class="chart-card">
+              <h4>Projetos por Responsável</h4>
+              <div class="chart-wrap"><canvas id="chart-responsavel"></canvas></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3>Gantt simplificado</h3>
+          <div id="gantt-wrap" class="gantt-wrap"></div>
+        </section>
+
+        <section class="card">
+          <div class="row between center">
+            <h3>Resumo por projeto</h3>
+            <div class="row gap center">
+              <label>Ordenar por
+                <select id="dash-sort-by">
+                  <option value="nome">Nome</option>
+                  <option value="status">Status</option>
+                  <option value="responsavel">Responsável</option>
+                  <option value="criticidade">Criticidade</option>
+                  <option value="data_inicio_previsto" selected>Início previsto</option>
+                  <option value="previsao_termino">Término previsto</option>
+                  <option value="progresso">Progresso</option>
+                </select>
+              </label>
+              <label>Direção
+                <select id="dash-sort-dir">
+                  <option value="asc">Ascendente</option>
+                  <option value="desc">Descendente</option>
+                </select>
+              </label>
+              <button id="btn-dash-expand-all" class="btn ghost">Expandir Etapas</button>
+              <button id="btn-dash-collapse-all" class="btn ghost">Recolher Etapas</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th></th><th>Projeto</th><th>Status</th><th>Responsável</th><th>Focal</th><th>Setor</th><th>Criticidade</th><th>Início</th><th>Término</th><th>Progresso</th></tr></thead>
+              <tbody id="dashboard-table"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-projetos-setores" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Cadastro de Setores</h2>
+            <p>Gerencie os setores utilizados em projetos, processos e usuários.</p>
+          </div>
+        </header>
+        <section class="card">
+          <div class="row gap">
+            <input id="setor-nome" type="text" placeholder="Nome do setor">
+            <button id="btn-add-setor" class="btn success">Cadastrar setor</button>
+          </div>
+          <p id="setor-msg" class="error-text"></p>
+        </section>
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Setor</th><th>Ações</th></tr></thead>
+              <tbody id="setores-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-cadastros-cargos" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Cadastro de Cargos</h2>
+            <p>Cadastre os cargos para vincular responsabilidades em processos e etapas.</p>
+          </div>
+        </header>
+        <section class="card">
+          <div class="row gap">
+            <input id="cargo-nome" type="text" placeholder="Nome do cargo">
+            <button id="btn-add-cargo" class="btn success">Cadastrar cargo</button>
+          </div>
+          <p id="cargo-msg" class="error-text"></p>
+        </section>
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Cargo</th><th>Ações</th></tr></thead>
+              <tbody id="cargos-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-cadastros-usuarios" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Cadastro de Usuários</h2>
+            <p>Crie usuários, vincule papéis e resete senha de forma controlada.</p>
+          </div>
+        </header>
+        <section class="card">
+          <div class="grid two">
+            <label>Nome<input id="usr-nome" type="text"></label>
+            <label>E-mail<input id="usr-email" type="email"></label>
+            <label>Setor
+              <select id="usr-departamento"></select>
+            </label>
+            <label>Cargo
+              <select id="usr-cargo"></select>
+            </label>
+            <label>Acesso ao sistema
+              <select id="usr-has-login">
+                <option value="sim">Sim</option>
+                <option value="nao">Não</option>
+              </select>
+            </label>
+            <label>Papel
+              <select id="usr-role"></select>
+            </label>
+          </div>
+          <div class="row end gap" style="margin-top:12px;">
+            <button id="btn-cancel-user-edit" class="btn ghost hidden">Cancelar edição</button>
+            <button id="btn-add-user" class="btn success">Cadastrar usuário</button>
+          </div>
+          <p id="usr-msg" class="error-text"></p>
+        </section>
+        <section class="card">
+          <div class="row gap center">
+            <label>Filtro de acesso ao sistema
+              <select id="usr-filter-login">
+                <option value="">Todos</option>
+                <option value="sim">Com acesso</option>
+                <option value="nao">Sem acesso</option>
+              </select>
+            </label>
+            <button id="btn-usr-filter" class="btn ghost">Aplicar filtro</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nome</th><th>E-mail</th><th>Usuário</th><th>Setor</th><th>Cargo</th><th>Acesso</th><th>Papel</th><th>Trocar senha no 1º acesso</th><th>Ações</th></tr></thead>
+              <tbody id="users-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-cadastros-perfis" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Papéis e Acessos</h2>
+            <p>Defina permissões por tela e vincule aos usuários.</p>
+          </div>
+        </header>
+        <section class="card">
+          <div class="grid two">
+            <label>Nome do papel<input id="role-nome" type="text"></label>
+          </div>
+          <h4 style="margin:12px 0 8px;">Permissões de tela</h4>
+          <div id="role-perms" class="grid two"></div>
+          <div class="row end gap" style="margin-top:12px;">
+            <button id="btn-cancel-role-edit" class="btn ghost hidden">Cancelar edição</button>
+            <button id="btn-add-role" class="btn success">Cadastrar papel</button>
+          </div>
+          <p id="role-msg" class="error-text"></p>
+        </section>
+        <section class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Papel</th><th>Permissões</th><th>Ações</th></tr></thead>
+              <tbody id="roles-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section id="view-cadastros-script-perguntas" class="module-view hidden">
+        <header class="hero">
+          <div>
+            <h2>Script de Perguntas</h2>
+            <p>Organize o roteiro de gravação por script, grupo de assunto, ordem e exemplo de resposta.</p>
+          </div>
+        </header>
+        <section class="card">
+          <div class="grid two" style="margin-bottom:8px;">
+            <label>Script por área/departamento
+              <select id="process-script-profile-select"></select>
+            </label>
+            <div class="row gap end" style="align-items:end;">
+              <button id="btn-process-profile-new" class="btn ghost btn-sm">Novo script</button>
+              <button id="btn-process-profile-delete" class="btn ghost btn-sm">Excluir script</button>
+            </div>
+          </div>
+          <div class="grid two" style="margin-bottom:8px;">
+            <label>Grupo de assuntos
+              <select id="process-script-group-select"></select>
+            </label>
+            <div class="row gap end" style="align-items:end;">
+              <button id="btn-process-group-new" class="btn ghost btn-sm">Novo grupo</button>
+              <button id="btn-process-group-edit" class="btn ghost btn-sm">Editar grupo</button>
+              <button id="btn-process-group-delete" class="btn ghost btn-sm">Excluir grupo</button>
+            </div>
+          </div>
+          <div id="process-script-group-summary" class="process-script-group-summary"></div>
+          <div class="row gap end" style="margin-bottom:8px;">
+            <button id="btn-process-question-add" class="btn ghost btn-sm">Adicionar pergunta</button>
+            <button id="btn-process-question-reset" class="btn ghost btn-sm">Restaurar padrão da área</button>
+            <button id="btn-process-question-word" class="btn ghost btn-sm">Baixar Word</button>
+            <button id="btn-process-question-pdf" class="btn ghost btn-sm">Baixar PDF</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Ordem</th><th>Grupo do assunto</th><th>Pergunta</th><th>Exemplo de resposta</th><th>Ações</th></tr></thead>
+              <tbody id="process-questions-body"></tbody>
+            </table>
+          </div>
+          <div class="row end" style="margin-top:10px;">
+            <button id="btn-process-question-save" class="btn success">Salvar roteiro</button>
+          </div>
+          <p id="process-help-msg" class="error-text"></p>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="must-change-password-modal" class="modal hidden">
+    <div class="modal-content" style="max-width:520px;">
+      <div class="row between center">
+        <h3>Alteração de Senha Obrigatória</h3>
+      </div>
+      <p style="margin:10px 0;">Para continuar, defina uma nova senha de acesso.</p>
+      <label>Senha atual
+        <input id="pwd-current" type="password">
+      </label>
+      <label style="margin-top:8px;">Nova senha
+        <input id="pwd-new" type="password">
+      </label>
+      <div class="row end" style="margin-top:12px;">
+        <button id="btn-change-password" class="btn success">Salvar nova senha</button>
+      </div>
+      <p id="pwd-msg" class="error-text"></p>
+    </div>
+  </div>
+
+  <div id="prio-help-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="row between center">
+        <h3>Metodologia do Robozômetro</h3>
+        <button id="btn-close-prio-help" class="btn ghost">Fechar</button>
+      </div>
+      <div class="methodology">
+        <h4>Critérios e Pesos</h4>
+        <ul>
+          <li>CP (impacto financeiro anual): 35%</li>
+          <li>Payback (retorno em meses): 30%</li>
+          <li>Complexidade invertida (6 - complexidade): 20%</li>
+          <li>Desenvolvimento interno: 15%</li>
+        </ul>
+        <h4>Fórmulas</h4>
+        <p><code>custo_hora = custo_mensal / 220</code></p>
+        <p><code>cp_anual = qtd_pessoas * horas_mensais * custo_hora * 12</code></p>
+        <p><code>economia_mensal = qtd_pessoas * horas_mensais * custo_hora</code></p>
+        <p><code>payback_meses = custo_desenvolvimento / economia_mensal</code></p>
+        <p><code>score_final = 0.35*cp_score + 0.30*pb_score + 0.20*(6-complexidade) + 0.15*dev_interno</code></p>
+        <h4>Regras de validação</h4>
+        <p>Qtd Pessoas, Horas Mensais e Custo Mensal devem ser maiores que zero.</p>
+        <p>Custo de Desenvolvimento deve ser maior ou igual a zero.</p>
+        <p>Complexidade e Desenvolvimento Interno devem estar entre 1 e 5.</p>
+        <p>Campos numéricos aceitam apenas valores finitos e válidos para cálculo.</p>
+        <h4>Conversão para Score (1 a 5)</h4>
+        <p><strong>CP:</strong> &gt;600.000=5 | &gt;300.000=4 | &gt;150.000=3 | &gt;50.000=2 | ≤50.000=1</p>
+        <p><strong>Payback:</strong> ≤3=5 | ≤6=4 | ≤12=3 | ≤24=2 | &gt;24=1</p>
+        <h4>Faixas de Prioridade</h4>
+        <p>≥4.5: muito alta | ≥3.5: alta | ≥2.5: média | &lt;2.5: baixa</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="preview-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="row between center">
+        <h3 id="preview-title">Pré-visualização</h3>
+        <button id="btn-close-preview" class="btn ghost">Fechar</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-doc="ficha_tecnica">Ficha Técnica</button>
+        <button class="tab" data-doc="fluxograma">Fluxograma</button>
+        <button class="tab" data-doc="riscos">Riscos</button>
+      </div>
+      <div class="editor-wrap">
+        <textarea id="editor-ficha_tecnica" class="editor"></textarea>
+        <textarea id="editor-fluxograma" class="editor hidden"></textarea>
+        <textarea id="editor-riscos" class="editor hidden"></textarea>
+      </div>
+      <div class="row gap end">
+        <button id="btn-regenerate" class="btn ghost">Gerar novamente</button>
+        <button id="btn-cancel" class="btn danger">Cancelar</button>
+        <button id="btn-approve" class="btn success">Aprovar e Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="project-details-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="row between center">
+        <h3>Detalhes do Projeto</h3>
+        <button id="btn-close-project-details" class="btn ghost">Fechar</button>
+      </div>
+      <div id="project-details-content"></div>
+    </div>
+  </div>
+
+  <div id="project-edit-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="row between center">
+        <h3>Editar Projeto (Gantt)</h3>
+        <button id="btn-close-project-edit" class="btn ghost">Fechar</button>
+      </div>
+      <input type="hidden" id="edit-project-id">
+      <div class="grid two">
+        <label>Nome<input id="edit-proj-nome" type="text"></label>
+        <label>Responsável<select id="edit-proj-responsavel"></select></label>
+        <label>Focal<select id="edit-proj-focal"></select></label>
+        <label>Participantes<select id="edit-proj-participantes" multiple></select></label>
+        <label>Status
+          <select id="edit-proj-status">
+            <option value="backlog">Backlog</option>
+            <option value="proxima_sprint">Próxima Sprint</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="pausado">Pausado</option>
+            <option value="concluido">Concluído</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </label>
+        <label>Criticidade
+          <select id="edit-proj-criticidade">
+            <option value="urgente">Urgente</option>
+            <option value="alta">Alta</option>
+            <option value="media">Média</option>
+            <option value="baixa">Baixa</option>
+            <option value="critica">Crítica</option>
+          </select>
+        </label>
+        <label>Início previsto<input id="edit-proj-data-inicio-previsto" type="date"></label>
+        <label>Término previsto<input id="edit-proj-previsao-termino" type="date"></label>
+      </div>
+      <label style="margin-top:10px;">Descrição<textarea id="edit-proj-descricao" rows="3"></textarea></label>
+      <div class="row between center" style="margin-top:12px;">
+        <h4>Etapas</h4>
+        <button id="btn-edit-add-etapa" class="btn ghost" type="button">Adicionar etapa</button>
+      </div>
+      <div id="edit-etapas-container" class="stages" style="margin-top:8px;"></div>
+      <div class="row end" style="margin-top:12px;">
+        <button id="btn-save-project-edit" class="btn success">Salvar alterações</button>
+      </div>
+      <p id="edit-project-msg" class="error-text"></p>
+    </div>
+  </div>
+
+  <div id="process-stage-modal" class="modal hidden">
+    <div class="modal-content" style="max-width:760px;">
+      <div class="row between center">
+        <h3 id="process-stage-modal-title">Detalhes da Etapa</h3>
+        <button id="btn-close-process-stage-modal" class="btn ghost">Fechar</button>
+      </div>
+      <div id="process-stage-modal-body"></div>
+    </div>
+  </div>
+
+  <button id="ai-fab" class="ai-fab" title="Abrir chat da Justine" aria-label="Abrir chat da Justine">🧠</button>
+  <section id="ai-chat-widget" class="ai-chat-widget hidden" aria-label="Chat da Justine">
+    <header class="ai-chat-header">
+      <div>
+        <strong>Justine</strong>
+        <p>Assistente HPO</p>
+      </div>
+      <button id="ai-chat-close" class="btn ghost btn-sm" type="button">Fechar</button>
+    </header>
+    <div id="ai-chat-body" class="ai-chat-body"></div>
+    <footer class="ai-chat-footer">
+      <textarea id="ai-chat-input" rows="2" placeholder="Digite sua pergunta sobre projetos, processos e indicadores..."></textarea>
+      <div class="row end" style="margin-top:8px;">
+        <button id="ai-chat-send" class="btn" type="button">Enviar</button>
+      </div>
+    </footer>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='api_client.js') }}"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
