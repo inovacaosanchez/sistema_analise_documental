@@ -42,7 +42,7 @@ Data de análise: {data_atual}
 BLOCO 1 - IDENTIFICAÇÃO DO PROCESSO 
 Nome do processo: [Extrair do conteúdo ou inferir a partir da atividade descrita] 
 Área responsável ou departamento: {departamento} 
-Subárea ou célula operacional: {subárea} 
+Subárea ou célula operacional: {subarea} 
 Nome do apresentador do processo: [registrar quem está apresentando ou descrevendo o processo] 
 Cargo do apresentador: [registrar o cargo ou função do apresentador] 
 Cargo de quem executa o processo no dia a dia: [registrar o cargo responsável pela execução operacional] 

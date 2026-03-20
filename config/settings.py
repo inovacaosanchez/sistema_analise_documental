@@ -80,10 +80,23 @@ class Settings:
     @classmethod
     def validate_api_key(cls):
         """Valida se API key esta configurada."""
-        if not cls.OPENAI_API_KEY or cls.OPENAI_API_KEY == "SUA_API_KEY_AQUI":
+        key = (cls.OPENAI_API_KEY or "").strip()
+
+        if not key:
             return False, "API Key do OpenAI nao configurada"
 
-        if len(cls.OPENAI_API_KEY) < 20:
+        lowered = key.lower()
+        placeholder_tokens = (
+            "your_openai_api_key",
+            "sua_api_key",
+            "trocar",
+            "change_me",
+            "example",
+        )
+        if any(token in lowered for token in placeholder_tokens):
+            return False, "API Key do OpenAI nao configurada"
+
+        if len(key) < 20:
             return False, "API Key parece invalida (muito curta)"
 
         return True, "API Key configurada"

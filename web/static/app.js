@@ -841,6 +841,25 @@ function getUserNameById(userId = "") {
   return match ? normalizeUserDisplayName(match) : "";
 }
 
+function createFallbackPersonValue(name = "") {
+  const normalizedName = String(name || "").trim();
+  return normalizedName ? `__name__:${normalizedName}` : "";
+}
+
+function parsePersonSelection(rawValue = "") {
+  const value = String(rawValue || "").trim();
+  if (!value) return { id: "", name: "" };
+  if (value.startsWith("__name__:")) return { id: "", name: value.slice("__name__:".length).trim() };
+  return { id: value, name: getUserNameById(value) || "" };
+}
+
+function getSelectOptionLabel(selectId, value = "") {
+  const select = $(selectId);
+  if (!select) return "";
+  const option = Array.from(select.options || []).find((opt) => String(opt.value || "") === String(value || ""));
+  return String(option?.textContent || "").trim();
+}
+
 function findUserIdByName(name = "") {
   const normalizedName = String(name || "").trim().toLowerCase();
   if (!normalizedName) return "";
@@ -1547,9 +1566,14 @@ function configureProjectStageResponsavelSelect(node, initial = {}, isEdit = fal
   if (!select.id) select.id = `stage-responsavel-${crypto.randomUUID()}`;
   const users = Array.isArray(usuariosCache) ? usuariosCache : [];
   const options = users.map((user) => ({ id: user.id, nome: normalizeUserDisplayName(user) }));
+  const fallbackName = String(initial.responsavel || "").trim();
+  const selectedId = initial.responsavel_id || findUserIdByName(fallbackName);
+  if (!selectedId && fallbackName) {
+    options.push({ id: createFallbackPersonValue(fallbackName), nome: fallbackName });
+  }
   renderSimpleOptions(select.id, options, "Selecione...");
-  const selectedId = initial.responsavel_id || findUserIdByName(initial.responsavel || "");
   if (selectedId) select.value = selectedId;
+  else if (fallbackName) select.value = createFallbackPersonValue(fallbackName);
   SEARCHABLE_SELECT_CONFIGS[select.id] = {
     multiple: false,
     placeholder: "Selecione um responsável",
@@ -1639,7 +1663,9 @@ function collectStages(containerId = "etapas-container", edit = false) {
   const stages = Array.from(rows).map((row) => ({
     id: row.dataset.id || crypto.randomUUID(),
     nome: row.querySelector(`.${prefix}etp-nome`).value.trim(),
-    responsavel: getUserNameById(row.querySelector(`.${prefix}etp-responsavel`).value) || "",
+    responsavel: parsePersonSelection(row.querySelector(`.${prefix}etp-responsavel`).value).name
+      || getSelectOptionLabel(row.querySelector(`.${prefix}etp-responsavel`).id, row.querySelector(`.${prefix}etp-responsavel`).value)
+      || "",
     inicio_previsto: row.querySelector(`.${prefix}etp-inicio-previsto`).value,
     inicio_real: row.querySelector(`.${prefix}etp-inicio-real`).value,
     fim_previsto: row.querySelector(`.${prefix}etp-fim-previsto`).value,
@@ -2876,6 +2902,10 @@ async function loadUsers() {
   usuariosCache = users;
   const roles = rolesRes.roles || [];
   const body = $("users-body");
+  if (!body) {
+    refreshProjectStageResponsavelSelects();
+    return;
+  }
   body.innerHTML = "";
   users.forEach((u) => {
     const tr = document.createElement("tr");
@@ -3741,13 +3771,42 @@ async function loadDashboard() {
 }
 
 async function openProjectEdit(projectId) {
-  if (!usuariosCache.length) await loadUsers();
   const p = (await api(`/api/projects/${projectId}`)).project;
+  if (!usuariosCache.length) {
+    try {
+      await loadUsers();
+    } catch (error) {
+      console.warn("Falha ao carregar usuarios para editar projeto.", error);
+    }
+  }
   $("edit-project-id").value = p.id;
   $("edit-proj-nome").value = p.nome || "";
-  $("edit-proj-responsavel").value = p.responsavel_id || findUserIdByName(p.responsavel || "");
-  $("edit-proj-focal").value = p.focal_id || findUserIdByName(p.focal || "");
-  setSelectValues("edit-proj-participantes", (p.participantes_ids || []).length ? (p.participantes_ids || []) : (p.participantes || []).map((name) => findUserIdByName(name)).filter(Boolean));
+  const peopleOptions = (Array.isArray(usuariosCache) ? usuariosCache : []).map((user) => ({ id: user.id, nome: normalizeUserDisplayName(user) }));
+  const responsavelFallbackValue = !p.responsavel_id && p.responsavel ? createFallbackPersonValue(p.responsavel) : "";
+  const focalFallbackValue = !p.focal_id && p.focal ? createFallbackPersonValue(p.focal) : "";
+  if (responsavelFallbackValue && !peopleOptions.some((opt) => String(opt.id) === responsavelFallbackValue)) {
+    peopleOptions.push({ id: responsavelFallbackValue, nome: p.responsavel });
+  }
+  if (focalFallbackValue && !peopleOptions.some((opt) => String(opt.id) === focalFallbackValue)) {
+    peopleOptions.push({ id: focalFallbackValue, nome: p.focal });
+  }
+  (p.participantes || []).forEach((name) => {
+    const fallbackValue = createFallbackPersonValue(name);
+    if (fallbackValue && !peopleOptions.some((opt) => String(opt.id) === fallbackValue)) {
+      peopleOptions.push({ id: fallbackValue, nome: name });
+    }
+  });
+  renderSimpleOptions("edit-proj-responsavel", peopleOptions, "Selecione...");
+  renderSimpleOptions("edit-proj-focal", peopleOptions, "Selecione...");
+  renderSimpleOptions("edit-proj-participantes", peopleOptions, "Selecione...");
+  $("edit-proj-responsavel").value = p.responsavel_id || findUserIdByName(p.responsavel || "") || responsavelFallbackValue;
+  $("edit-proj-focal").value = p.focal_id || findUserIdByName(p.focal || "") || focalFallbackValue;
+  setSelectValues(
+    "edit-proj-participantes",
+    (p.participantes_ids || []).length
+      ? (p.participantes_ids || [])
+      : (p.participantes || []).map((name) => findUserIdByName(name) || createFallbackPersonValue(name)).filter(Boolean),
+  );
   buildSearchableSelectControl("edit-proj-responsavel");
   buildSearchableSelectControl("edit-proj-focal");
   buildSearchableSelectControl("edit-proj-participantes");
@@ -3770,17 +3829,23 @@ async function saveProjectEdit() {
   $("edit-project-msg").textContent = "";
   try {
     const current = (await api(`/api/projects/${projectId}`)).project;
+    const responsavelSelection = parsePersonSelection($("edit-proj-responsavel").value);
+    const focalSelection = parsePersonSelection($("edit-proj-focal").value);
+    const participantesSelection = getSelectValues("edit-proj-participantes");
     const payload = {
       ...current,
       nome: $("edit-proj-nome").value.trim(),
-      responsavel_id: $("edit-proj-responsavel").value,
-      focal_id: $("edit-proj-focal").value,
-      participantes_ids: getSelectValues("edit-proj-participantes"),
+      responsavel: responsavelSelection.name || getSelectOptionLabel("edit-proj-responsavel", $("edit-proj-responsavel").value) || current.responsavel || "",
+      responsavel_id: responsavelSelection.id,
+      focal: focalSelection.name || getSelectOptionLabel("edit-proj-focal", $("edit-proj-focal").value) || current.focal || "",
+      focal_id: focalSelection.id,
+      participantes_ids: participantesSelection,
       status: $("edit-proj-status").value,
       criticidade: $("edit-proj-criticidade").value,
       data_inicio_previsto: $("edit-proj-data-inicio-previsto").value,
       previsao_termino: $("edit-proj-previsao-termino").value,
       descricao: $("edit-proj-descricao").value.trim(),
+      participantes: participantesSelection.map((value) => parsePersonSelection(value).name || getSelectOptionLabel("edit-proj-participantes", value) || value).filter(Boolean),
       etapas: collectStages("edit-etapas-container", true),
     };
     await api(`/api/projects/${projectId}`, { method: "PUT", body: JSON.stringify(payload) });

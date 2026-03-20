@@ -1502,6 +1502,9 @@ class WebApp:
 
             permissions = self._get_user_permissions(user)
             context_payload = self._build_assistant_context_for_user(user, permissions)
+            structured_answer = self._assistant_try_structured_answer(message, context_payload, user)
+            if structured_answer:
+                return jsonify({"ok": True, "answer": structured_answer})
 
             system_prompt = (
                 "Voce e Justine, assistente virtual do HPO (Hub de Processos Operacionais). "
@@ -1541,7 +1544,7 @@ class WebApp:
                 return jsonify({"ok": True, "answer": answer})
             except Exception as exc:
                 self.logger.warning(f"Falha no assistente OpenAI (fallback local): {exc}")
-                fallback = self._assistant_local_fallback_answer(message, context_payload)
+                fallback = self._assistant_local_fallback_answer(message, context_payload, user)
                 return jsonify({"ok": True, "answer": fallback})
 
     def _serialize_state(self) -> Dict:
@@ -1775,6 +1778,7 @@ class WebApp:
 
         if can_access_projects:
             projects = self._load_json(self.projects_file, default=[])
+            projects = self._filter_projects_for_user(projects, user)
             top_projects = projects[:20]
             status_count = self._count_by_key(projects, "status")
             criticidade_count = self._count_by_key(projects, "criticidade")
@@ -1859,8 +1863,24 @@ class WebApp:
             "context_text": "\n".join(context_parts),
         }
 
-    def _assistant_local_fallback_answer(self, message: str, context_payload: Dict[str, Any]) -> str:
+    def _assistant_try_structured_answer(self, message: str, context_payload: Dict[str, Any], user: Optional[Dict[str, Any]]) -> str:
         normalized = self._normalize_text(message)
+        answer = self._assistant_answer_project_status(normalized, context_payload, user)
+        if answer:
+            return answer
+        answer = self._assistant_answer_process_status(normalized, context_payload)
+        if answer:
+            return answer
+        return ""
+
+    def _assistant_local_fallback_answer(self, message: str, context_payload: Dict[str, Any], user: Optional[Dict[str, Any]] = None) -> str:
+        normalized = self._normalize_text(message)
+        answer = self._assistant_answer_project_status(normalized, context_payload, user)
+        if answer:
+            return answer
+        answer = self._assistant_answer_process_status(normalized, context_payload)
+        if answer:
+            return answer
         answer = self._assistant_answer_process_count_by_department(normalized, context_payload)
         if answer:
             return answer
@@ -1874,6 +1894,170 @@ class WebApp:
             "Ola! Eu sou a Justine, assistente do HPO. No momento estou em modo local de contingencia. "
             "Posso responder consultas de quantidade por area/departamento/status e comentarios/anotacoes com base nos seus acessos."
         )
+
+    def _assistant_answer_project_status(
+        self,
+        normalized_message: str,
+        context_payload: Dict[str, Any],
+        user: Optional[Dict[str, Any]],
+    ) -> str:
+        project_keywords = ("projeto", "projetos")
+        status_keywords = ("status", "situacao", "andamento", "progresso", "fase")
+        if not any(k in normalized_message for k in project_keywords):
+            return ""
+        if not context_payload.get("can_access_projects"):
+            return "Voce nao possui permissao para consultar dados de projetos."
+
+        projects = self._load_json(self.projects_file, default=[])
+        projects = self._filter_projects_for_user(projects, user)
+        if not projects:
+            return "Nao encontrei projetos visiveis para sua consulta."
+
+        asks_status = any(k in normalized_message for k in status_keywords)
+        if not asks_status:
+            return ""
+
+        matched_by_project_name = [
+            p for p in projects
+            if self._message_mentions_value(normalized_message, str(p.get("nome", "")).strip())
+        ]
+        if matched_by_project_name:
+            lines = [self._format_project_status_line(p) for p in matched_by_project_name[:8]]
+            return "Status do(s) projeto(s) encontrado(s):\n" + "\n".join(lines)
+
+        people_in_message = self._extract_people_from_message(normalized_message, projects)
+        if people_in_message:
+            related_projects = [
+                p for p in projects
+                if any(self._project_has_person(p, person) for person in people_in_message)
+            ]
+            if related_projects:
+                lines = [self._format_project_status_line(p) for p in related_projects[:8]]
+                return "Status do(s) projeto(s) vinculado(s) a pessoa informada:\n" + "\n".join(lines)
+            return "Nao encontrei projeto vinculado a pessoa informada na base visivel para voce."
+
+        status_count = self._count_by_key(projects, "status")
+        return "Status atual dos projetos: " + self._format_count_map(status_count)
+
+    def _assistant_answer_process_status(self, normalized_message: str, context_payload: Dict[str, Any]) -> str:
+        process_keywords = ("processo", "processos")
+        status_keywords = ("status", "situacao", "andamento", "progresso", "fase")
+        if not any(k in normalized_message for k in process_keywords):
+            return ""
+        if not any(k in normalized_message for k in status_keywords):
+            return ""
+        if not context_payload.get("can_access_processes"):
+            return "Voce nao possui permissao para consultar dados de processos."
+
+        processos = self._load_json(self.processes_file, default=[])
+        if not processos:
+            return "Nao encontrei processos cadastrados para consulta."
+
+        matched_by_process_name = [
+            p for p in processos
+            if self._message_mentions_value(normalized_message, str(p.get("nome", "")).strip())
+        ]
+        if matched_by_process_name:
+            lines = [self._format_process_status_line(p) for p in matched_by_process_name[:8]]
+            return "Status do(s) processo(s) encontrado(s):\n" + "\n".join(lines)
+
+        people_in_message = self._extract_people_from_message(normalized_message, processos, process_mode=True)
+        if people_in_message:
+            related = [
+                p for p in processos
+                if any(self._process_has_person(p, person) for person in people_in_message)
+            ]
+            if related:
+                lines = [self._format_process_status_line(p) for p in related[:8]]
+                return "Status do(s) processo(s) vinculado(s) a pessoa informada:\n" + "\n".join(lines)
+            return "Nao encontrei processo vinculado a pessoa informada."
+
+        status_count = self._count_by_key(processos, "status")
+        return "Status atual dos processos: " + self._format_count_map(status_count)
+
+    def _extract_people_from_message(
+        self,
+        normalized_message: str,
+        items: List[Dict[str, Any]],
+        process_mode: bool = False,
+    ) -> List[str]:
+        names: List[str] = []
+        users = self._load_json(self.users_file, default=[])
+        for user in users:
+            nome = str(user.get("nome", "")).strip()
+            if nome:
+                names.append(nome)
+        for item in items:
+            names.append(str(item.get("responsavel", "")).strip())
+            names.append(str(item.get("focal", "")).strip())
+            names.extend([str(v).strip() for v in (item.get("participantes") or [])])
+            names.extend([str(v).strip() for v in (item.get("setores_impactados") or [])])
+            if process_mode:
+                names.append(str(item.get("responsavel_nome", "")).strip())
+                for etapa in (item.get("etapas") or []):
+                    names.append(str(etapa.get("responsavel_nome", "")).strip())
+            else:
+                for etapa in (item.get("etapas") or []):
+                    names.append(str(etapa.get("responsavel", "")).strip())
+
+        unique_names = sorted({n for n in names if n}, key=len, reverse=True)
+        matched: List[str] = []
+        for name in unique_names:
+            norm_name = self._normalize_text(name)
+            if not norm_name or len(norm_name) < 3:
+                continue
+            if re.search(rf"\b{re.escape(norm_name)}\b", normalized_message):
+                matched.append(norm_name)
+                continue
+            first_token = norm_name.split(" ")[0] if " " in norm_name else ""
+            if first_token and len(first_token) >= 4 and re.search(rf"\b{re.escape(first_token)}\b", normalized_message):
+                matched.append(norm_name)
+        return matched
+
+    def _message_mentions_value(self, normalized_message: str, value: str) -> bool:
+        candidate = self._normalize_text(value)
+        if not candidate:
+            return False
+        if candidate in normalized_message:
+            return True
+        tokens = [t for t in candidate.split(" ") if len(t) >= 4]
+        return bool(tokens) and all(t in normalized_message for t in tokens[:3])
+
+    def _project_has_person(self, project: Dict[str, Any], normalized_person: str) -> bool:
+        names = [
+            str(project.get("responsavel", "")).strip(),
+            str(project.get("focal", "")).strip(),
+        ]
+        names.extend([str(v).strip() for v in (project.get("participantes") or [])])
+        names.extend([str(v).strip() for v in (project.get("setores_impactados") or [])])
+        for etapa in (project.get("etapas") or []):
+            names.append(str(etapa.get("responsavel", "")).strip())
+        return any(self._normalize_text(name) == normalized_person for name in names if name)
+
+    def _process_has_person(self, processo: Dict[str, Any], normalized_person: str) -> bool:
+        names = [str(processo.get("responsavel_nome", "")).strip()]
+        for etapa in (processo.get("etapas") or []):
+            names.append(str(etapa.get("responsavel_nome", "")).strip())
+        return any(self._normalize_text(name) == normalized_person for name in names if name)
+
+    def _format_project_status_line(self, project: Dict[str, Any]) -> str:
+        nome = str(project.get("nome", "")).strip() or "-"
+        status = str(project.get("status", "")).strip() or "nao_informado"
+        responsavel = str(project.get("responsavel", "")).strip() or "-"
+        progresso = project.get("progresso", 0)
+        try:
+            progresso = float(progresso)
+        except Exception:
+            progresso = 0
+        return f"- {nome}: status={status}, responsavel={responsavel}, progresso={progresso:.1f}%"
+
+    def _format_process_status_line(self, processo: Dict[str, Any]) -> str:
+        nome = str(processo.get("nome", "")).strip() or "-"
+        status = str(processo.get("status", "")).strip() or "nao_informado"
+        responsavel = str(processo.get("responsavel_nome", "")).strip() or "-"
+        departamento = str(processo.get("departamento_nome", "")).strip() or "-"
+        etapas = len(processo.get("etapas") or [])
+        return f"- {nome}: status={status}, responsavel={responsavel}, departamento={departamento}, etapas={etapas}"
 
     def _assistant_answer_process_count_by_department(self, normalized_message: str, context_payload: Dict[str, Any]) -> str:
         if not context_payload.get("can_access_processes"):
